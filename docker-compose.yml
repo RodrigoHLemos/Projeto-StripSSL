@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # -------------------------------------------------------
+  # Servidor Alvo: CEUB SecureBank (Web App Flask + Nginx)
+  # -------------------------------------------------------
+  servidor:
+    build:
+      context: ./servidor
+    container_name: lab_servidor
+    hostname: banco.lab.local
+    networks:
+      rede_lab:
+        ipv4_address: 172.20.0.10
+        aliases:
+          - banco.lab.local
+          - app.lab.local
+    ports:
+      - "8080:80"   # Acesso HTTP via máquina host: http://localhost:8080
+      - "8443:443"  # Acesso HTTPS via máquina host: https://localhost:8443
+    volumes:
+      - ./certs:/certs
+    extra_hosts:
+      - "banco.lab.local:172.20.0.10"
+      - "app.lab.local:172.20.0.10"
+    restart: unless-stopped
+
+  # -------------------------------------------------------
+  # Atacante: Kali Linux / Bettercap (ARP Spoofing + SSL Strip)
+  # -------------------------------------------------------
+  atacante:
+    build:
+      context: ./atacante
+    container_name: lab_atacante
+    hostname: atacante.lab.local
+    privileged: true
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    sysctls:
+      - net.ipv4.ip_forward=1
+    networks:
+      rede_lab:
+        ipv4_address: 172.20.0.20
+    extra_hosts:
+      - "banco.lab.local:172.20.0.10"
+      - "app.lab.local:172.20.0.10"
+    depends_on:
+      - servidor
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+  # -------------------------------------------------------
+  # Vítima: Usuário Comum com Navegador e Ferramentas Web
+  # -------------------------------------------------------
+  vitima:
+    build:
+      context: ./vitima
+    container_name: lab_vitima
+    hostname: vitima.lab.local
+    networks:
+      rede_lab:
+        ipv4_address: 172.20.0.30
+    extra_hosts:
+      - "banco.lab.local:172.20.0.10"
+      - "app.lab.local:172.20.0.10"
+    depends_on:
+      - servidor
+      - atacante
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+
+# -------------------------------------------------------
+# Rede Virtual Isolada (LAN compartilhada de Laboratório)
+# -------------------------------------------------------
+networks:
+  rede_lab:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/24
+          gateway: 172.20.0.1

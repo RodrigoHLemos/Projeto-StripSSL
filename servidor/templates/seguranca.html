@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center py-3">
+    <div class="col-lg-9">
+        <div class="card card-custom p-4 bg-white mb-4">
+            <h3 class="fw-bold mb-3"><i class="bi bi-shield-shaded text-primary me-2"></i>Controles Criptográficos e Mitigação</h3>
+            <p class="text-secondary">
+                Este painel permite alternar a configuração de segurança do servidor web para fins de demonstração acadêmica,
+                conforme fundamentado na revisão de literatura sobre <strong>OWASP A04:2025</strong>, 
+                <strong>Marlinspike (2009)</strong>, <strong>RFC 6797 (HSTS)</strong> e a norma <strong>ABNT NBR ISO/IEC 27002</strong>.
+            </p>
+
+            <div class="p-3 rounded-3 mb-4 {% if modo == 'mitigado' %}bg-success-subtle border border-success{% else %}bg-danger-subtle border border-danger{% endif %}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="fw-bold mb-1">
+                            Modo Atual: 
+                            {% if modo == 'mitigado' %}
+                                <span class="text-success"><i class="bi bi-shield-check me-1"></i>MITIGADO (Ambiente Seguro)</span>
+                            {% else %}
+                                <span class="text-danger"><i class="bi bi-shield-slash me-1"></i>VULNERÁVEL A SSL STRIPPING</span>
+                            {% endif %}
+                        </h5>
+                        <div class="small text-muted">
+                            {% if modo == 'mitigado' %}
+                                O cabeçalho <code>Strict-Transport-Security</code> é enviado em todas as respostas e os cookies de sessão possuem as diretivas <code>Secure; HttpOnly; SameSite=Strict</code>.
+                            {% else %}
+                                O servidor permite conexões HTTP desprotegidas, não envia o cabeçalho HSTS e emite cookies sem a diretiva <code>Secure</code>.
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <form action="/api/alternar-seguranca" method="POST">
+                        <button type="submit" class="btn {% if modo == 'mitigado' %}btn-danger{% else %}btn-success{% endif %} btn-lg px-4 shadow-sm">
+                            {% if modo == 'mitigado' %}
+                                <i class="bi bi-toggle-off me-1"></i> Mudar para MODO VULNERÁVEL
+                            {% else %}
+                                <i class="bi bi-toggle-on me-1"></i> ATIVAR MITIGAÇÃO (HSTS)
+                            {% endif %}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card h-100 border p-3">
+                        <h6 class="fw-bold text-danger"><i class="bi bi-x-circle-fill me-2"></i>Cenário 1: Vulnerável (Antes da Mitigação)</h6>
+                        <ul class="small text-muted ps-3 mb-3">
+                            <li><strong>HSTS:</strong> Desativado (ausente dos cabeçalhos).</li>
+                            <li><strong>Redirecionamento:</strong> HTTP 302 para HTTPS facilmente reescrito pelo Bettercap.</li>
+                            <li><strong>Cookies:</strong> <code>session_id=...; Path=/</code> (sem flag <code>Secure</code>).</li>
+                            <li><strong>Resultado:</strong> Atacante executa ARP Spoofing + SSL Strip, rebaixa para HTTP texto claro e sequestra a sessão da vítima.</li>
+                        </ul>
+                        <div class="bg-dark text-white p-2 rounded font-monospace small">
+HTTP/1.1 200 OK<br>
+Set-Cookie: session_id=sess_...; Path=/<br>
+<span class="text-danger"># Strict-Transport-Security: AUSENTE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card h-100 border p-3">
+                        <h6 class="fw-bold text-success"><i class="bi bi-check-circle-fill me-2"></i>Cenário 2: Mitigado (HSTS & ISO 27002)</h6>
+                        <ul class="small text-muted ps-3 mb-3">
+                            <li><strong>HSTS (RFC 6797):</strong> Ativo com <code>max-age=31536000</code>.</li>
+                            <li><strong>Navegador:</strong> Converte internamente qualquer requisição HTTP para HTTPS antes de tocar a rede (Internal 307 Redirect).</li>
+                            <li><strong>Cookies:</strong> <code>session_id=...; Secure; HttpOnly; SameSite=Strict</code>.</li>
+                            <li><strong>Resultado:</strong> O ataque de SSL Stripping falha categoricamente. O Bettercap não consegue rebaixar a conexão.</li>
+                        </ul>
+                        <div class="bg-dark text-white p-2 rounded font-monospace small">
+HTTP/1.1 200 OK<br>
+Set-Cookie: session_id=...; <span class="text-success">Secure; HttpOnly; SameSite=Strict</span><br>
+<span class="text-success">Strict-Transport-Security: max-age=31536000; includeSubDomains</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-top text-center">
+                <a href="/dashboard" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-arrow-left me-1"></i> Voltar ao Dashboard
+                </a>
+                <a href="/api/reset" class="btn btn-outline-warning">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Resetar Saldo e Extrato
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

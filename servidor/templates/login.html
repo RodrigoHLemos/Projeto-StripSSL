@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center py-4">
+    <div class="col-md-6 col-lg-5">
+        <div class="card card-custom p-4 bg-white">
+            <div class="text-center mb-4">
+                <div class="bg-primary text-white rounded-circle d-inline-flex p-3 mb-2 shadow-sm">
+                    <i class="bi bi-person-lock fs-2"></i>
+                </div>
+                <h3 class="fw-bold">Acesso ao Internet Banking</h3>
+                <p class="text-muted small">Informe suas credenciais para gerenciar sua conta corrente</p>
+            </div>
+
+            <form action="/login" method="POST">
+                <div class="mb-3">
+                    <label for="usuario" class="form-label fw-semibold">Usuário / CPF:</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" class="form-control" id="usuario" name="usuario" value="vitima" required autofocus>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="senha" class="form-label fw-semibold">Senha Eletrônica:</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-key"></i></span>
+                        <input type="password" class="form-control" id="senha" name="senha" value="senha123" required>
+                    </div>
+                    <div class="form-text small text-muted">Senha de teste pré-preenchida para o laboratório</div>
+                </div>
+
+                <div class="d-grid mb-3">
+                    <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                        <i class="bi bi-box-arrow-in-right me-2"></i> Entrar na Conta
+                    </button>
+                </div>
+            </form>
+
+            <div class="border-top pt-3 text-center">
+                <small class="text-muted">
+                    <i class="bi bi-shield-exclamation text-warning me-1"></i>
+                    {% if modo == 'vulneravel' %}
+                        <span class="text-danger fw-semibold">Alerta de Risco:</span> Canal vulnerável a SSL Stripping. As credenciais digitadas podem ser interceptadas em texto claro!
+                    {% else %}
+                        <span class="text-success fw-semibold">Canal Protegido:</span> HSTS ativo e Cookies com flag <code>Secure</code>.
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

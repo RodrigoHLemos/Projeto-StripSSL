@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CEUB SecureBank - Laboratório SSL Stripping{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --ceub-blue: #002b49;
+            --ceub-cyan: #0077c8;
+            --ceub-accent: #e30613;
+        }
+        body {
+            background-color: #f4f6f9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .navbar-ceub {
+            background: linear-gradient(135deg, var(--ceub-blue) 0%, #00182b 100%);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .badge-vulneravel {
+            background-color: #dc3545;
+            color: #fff;
+            animation: pulse-danger 2s infinite;
+        }
+        .badge-mitigado {
+            background-color: #198754;
+            color: #fff;
+        }
+        @keyframes pulse-danger {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        .card-custom {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+        .footer {
+            margin-top: auto;
+            background-color: #ffffff;
+            border-top: 1px solid #e9ecef;
+            padding: 1rem 0;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-ceub py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-bold" href="/">
+                <i class="bi bi-shield-shaded me-2 text-warning fs-3"></i>
+                <span>CEUB <span class="text-info">SecureBank</span></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-3">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="bi bi-house-door me-1"></i> Início</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard"><i class="bi bi-wallet2 me-1"></i> Internet Banking</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/seguranca"><i class="bi bi-toggles me-1"></i> Painel de Segurança (HSTS)</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="text-end text-light">
+                        <div class="small text-white-50">Status do Sistema:</div>
+                        {% if modo == 'mitigado' %}
+                            <span class="badge badge-mitigado px-3 py-2 rounded-pill">
+                                <i class="bi bi-shield-check me-1"></i> MITIGADO (HSTS Ativo)
+                            </span>
+                        {% else %}
+                            <span class="badge badge-vulneravel px-3 py-2 rounded-pill">
+                                <i class="bi bi-shield-slash me-1"></i> VULNERÁVEL (Sem HSTS)
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show card-custom" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="footer">
+        <div class="container text-center">
+            <div><strong>Laboratório de Pesquisa em Falhas Criptográficas e SSL Stripping</strong></div>
+            <div>Projeto Acadêmico CEUB | Autor: Alexsandro Patrício dos Santos Júnior | Baseado em Marlinspike (2009) & RFC 6797</div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
